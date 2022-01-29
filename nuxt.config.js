@@ -48,6 +48,10 @@ export default {
       changeOrigin: true, 
     },
     '/api/v1/member/login': 'http://127.0.0.1:9010',
+    '/api/v1/member/token-auth': 'http://127.0.0.1:9010',
+    '/api/v1/url-paginate':  'http://127.0.0.1:9020',
+    '/api/v1/url-list': 'http://127.0.0.1:9020',
+    '/api/v1/edit-url': 'http://127.0.0.1:9020',
     '/api/v1/short-url': 'http://127.0.0.1:9020',
   },
   // Build Configuration: https://go.nuxtjs.dev/config-build

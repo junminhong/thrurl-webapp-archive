@@ -1,14 +1,6 @@
 <template>
   <el-container>
-    <el-header style="background-color: #87cefa">
-      <el-row type="flex" align="bottom">
-        <el-col :span="22"
-          ><div style="font-size: 2em" @click="gotoHomePage()">
-            Thrurl
-          </div></el-col
-        >
-      </el-row>
-    </el-header>
+    <el-header style="background-color: #87cefa"><Header></Header></el-header>
     <el-main style="width: 50%; margin: auto; padding-top: 5%">
       <transition name="el-zoom-in-center">
         <el-card body-style="margin: auto" v-show="show">
@@ -108,7 +100,6 @@ export default {
   name: 'LoginPage',
   data() {
     const validatePass = (rule, value, callback) => {
-      console.log(rule, value)
       if (value === '') {
         if (rule.field === 'email') {
           callback(new Error('請輸入信箱'))
@@ -138,7 +129,27 @@ export default {
       show1: false,
     }
   },
+  mounted() {
+    this.checkLogin()
+  },
   methods: {
+    async checkLogin() {
+      if (this.$cookies.get('access_token') !== null) {
+        await this.$axios
+          .$post(
+            '/api/v1/member/token-auth',
+            {},
+            {
+              headers: {
+                Authorization: 'Bearer ' + this.$cookies.get('access_token'),
+              },
+            }
+          )
+          .then((result) => {
+            this.$router.push('/')
+          })
+      }
+    },
     submitForm(formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
@@ -150,12 +161,29 @@ export default {
       })
     },
     async login() {
-      const result = await this.$axios.$post('/api/v1/member/login', {
-        email: this.loginForm.email,
-        password: this.loginForm.password
-      })
-      console.log(result.data.access_token)
-      this.$cookies.set("access_token", result.data.access_token, '60s')
+      await this.$axios
+        .$post('/api/v1/member/login', {
+          email: this.loginForm.email,
+          password: this.loginForm.password,
+        })
+        .then((result) => {
+          this.$cookies.set('access_token', result.data.access_token, '1h')
+          this.$router.push('/')
+        })
+        .catch((error) => {
+          let msg = ''
+          switch (error.response.data.message) {
+            default:
+              msg = error.response.data.message
+              break
+          }
+          this.$notify({
+            title: '會員登入系統訊息',
+            message: msg,
+            type: 'error',
+            duration: 4500,
+          })
+        })
     },
     testShow() {
       const show = this
@@ -181,12 +209,5 @@ export default {
 <style scope>
 * {
   margin: 0px;
-}
-.el-footer {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  height: 100%;
-  padding-top: 30px;
 }
 </style>

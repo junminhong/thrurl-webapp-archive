@@ -1,37 +1,6 @@
 <template>
   <el-container>
-    <el-header style="background-color: #87cefa">
-      <el-row type="flex" align="middle">
-        <el-col :span="19"><div style="font-size: 2em">Thrurl</div></el-col>
-        <el-col :span="3"
-          ><el-button
-            icon="el-icon-chat-dot-round"
-            type="primary"
-            @click="aboutDeveloper()"
-            >開發者的話</el-button
-          ></el-col
-        >
-        <el-col :span="2"
-          ><el-button
-            v-show="false"
-            icon="el-icon-unlock"
-            type="primary"
-            @click="gotoLoginPage()"
-            >登入</el-button
-          >
-
-          <el-dropdown trigger="click" style="padding-top: 5%">
-            <span class="el-dropdown-link">
-              <el-avatar src="/assets/png/user.png"></el-avatar>
-            </span>
-            <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item>Hi, username</el-dropdown-item>
-              <el-dropdown-item divided></el-dropdown-item>
-            </el-dropdown-menu>
-          </el-dropdown>
-        </el-col>
-      </el-row>
-    </el-header>
+    <el-header style="background-color: #87cefa"><Header></Header></el-header>
     <el-main>
       <el-tabs type="border-card">
         <el-tab-pane label="縮短網址">
@@ -59,7 +28,13 @@
                 >縮址</el-button
               >
             </el-input>
+            <el-alert
+              title="登入會員可使用更多豐富的功能"
+              type="success"
+              :closable="false"
+            ></el-alert>
             <el-form
+              v-show="false"
               style="
                 margin: auto;
                 width: 50%;
@@ -154,6 +129,25 @@
               </el-form-item>
             </el-form> </el-card
         ></el-tab-pane>
+        <el-tab-pane label="作品集">
+          <div class="demo-image__preview">
+            <el-image
+              style="width: 100px; height: 100px"
+              :src="url"
+              :preview-src-list="srcList"
+            >
+            </el-image>
+          </div>
+        </el-tab-pane>
+        <el-tab-pane label="台鐵時刻表"> 台鐵的時刻表查詢 </el-tab-pane>
+        <el-tab-pane label="開發者的話">
+          您好，我是<a
+            href="https://www.cakeresume.com/me/junminhong1110"
+            target="_blank"
+            >洪鈞閔(junmin.hong)</a
+          >，是這個平台的開發者。
+          <p>如果你也喜歡本平台提供的服務，可以透過贊助的方式支持我！</p>
+        </el-tab-pane>
       </el-tabs>
     </el-main>
     <!--<el-footer style="background-color: black; color: #fffafa">
@@ -174,22 +168,86 @@ export default {
       value1: true,
       labelPosition: 'top',
       haveToken: '',
+      url: 'https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg',
+      srcList: [
+        'https://fuss10.elemecdn.com/8/27/f01c15bb73e1ef3793e64e6b7bbccjpeg.jpeg',
+        'https://fuss10.elemecdn.com/1/8e/aeffeb4de74e2fde4bd74fc7b4486jpeg.jpeg',
+      ],
     }
   },
   mounted() {
-    this.haveToken = !this.$cookies.isKey('access_token')
+    this.checkLogin()
   },
   methods: {
+    async checkLogin() {
+      if (this.$cookies.get('access_token') !== null) {
+        await this.$axios
+          .$post(
+            '/api/v1/member/token-auth',
+            {},
+            {
+              headers: {
+                Authorization: 'Bearer ' + this.$cookies.get('access_token'),
+              },
+            }
+          )
+          .then((result) => {
+            this.haveToken = true
+          })
+          .catch(() => {
+            this.haveToken = false
+          })
+      }
+    },
     async shortUrlHandler() {
-      const result = await this.$axios.$post('/api/v1/short-url', {
-        source_url: this.sourceUrl,
-      })
-      this.$notify({
-        title: '已成功生成短網址',
-        message: result.data.short_url,
-        type: 'success',
-        duration: 0,
-      })
+      await this.$axios
+        .$post(
+          '/api/v1/short-url',
+          {
+            source_url: this.sourceUrl,
+          },
+          {
+            headers: {
+              Authorization: 'Bearer ' + this.$cookies.get('access_token'),
+            },
+          }
+        )
+        .then((result) => {
+          console.log(result)
+          if (result.data !== '') {
+            // 有資料
+            this.$notify({
+              title: '已成功生成短網址',
+              message: result.data.short_url,
+              type: 'success',
+              duration: 0,
+            })
+          } else {
+            this.$notify({
+              title: '短網址生成失敗',
+              message: result.data.message,
+              type: 'error',
+              duration: 0,
+            })
+          }
+        })
+        .catch((error) => {
+          let msg = ''
+          switch (error.response.data.message) {
+            case '無效的網址連結':
+              msg = '請確定你的網址是有效連結'
+              break
+            default:
+              msg = error.response.data.message
+              break
+          }
+          this.$notify({
+            title: '短網址生成失敗',
+            message: msg,
+            type: 'error',
+            duration: 0,
+          })
+        })
       this.sourceUrl = ''
     },
     testUpload(file) {
@@ -225,15 +283,9 @@ export default {
     gotoLoginPage() {
       this.$router.push('/login')
     },
-    aboutDeveloper() {
-      this.$alert(
-        '您好，我是<a href="https://www.cakeresume.com/me/junminhong1110" target="_blank">洪鈞閔(junmin.hong)</a>，是這個平台的開發者。<p>如果你也喜歡本平台提供的服務，可以透過贊助的方式支持我！</p>',
-        '開發者的話',
-        {
-          confirmButtonText: '了解',
-          dangerouslyUseHTMLString: true,
-        }
-      )
+    gotoUrlCenter() {
+      console.log('a')
+      this.$router.push('/url-center')
     },
   },
 }
