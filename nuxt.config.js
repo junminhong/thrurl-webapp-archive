@@ -52,7 +52,9 @@ export default {
     '/api/v1/url-paginate':  'http://127.0.0.1:9020',
     '/api/v1/url-list': 'http://127.0.0.1:9020',
     '/api/v1/edit-url': 'http://127.0.0.1:9020',
+    '/api/v1/check-url': 'http://127.0.0.1:9020',
     '/api/v1/short-url': 'http://127.0.0.1:9020',
+    '/api/v1/goto-url': 'http://127.0.0.1:9020',
   },
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {

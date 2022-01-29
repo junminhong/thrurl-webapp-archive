@@ -14,7 +14,7 @@
       >
         <el-table-column type="expand">
           <template slot-scope="props">
-            <el-form label-position="left" inline class="demo-table-expand">
+            <el-form label-position="left" inline>
               <el-form-item label="短網址">
                 <span>{{ props.row.shorten_id }}</span>
               </el-form-item>
@@ -39,7 +39,7 @@
         <el-table-column label="短網址" prop="shorten_id"> </el-table-column>
         <el-table-column label="原始網址" prop="source"> </el-table-column>
         <el-table-column label="點擊數" prop="click_count"> </el-table-column>
-        <el-table-column fixed="right"  label="功能">
+        <el-table-column fixed="right" label="功能">
           <template slot-scope="scope">
             <el-button
               size="medium"
@@ -57,7 +57,6 @@
       </el-table>
       <el-dialog
         title="短網址資料編輯器"
-        :modal="url"
         :visible.sync="dialogFormVisible"
       >
         <el-form>
@@ -126,9 +125,9 @@ export default {
     this.getAllUrlList()
   },
   methods: {
-    checkLogin() {
+    async checkLogin() {
       if (this.$cookies.get('access_token') !== null) {
-        this.$axios
+        await this.$axios
           .$post(
             '/api/v1/member/token-auth',
             {},
@@ -143,8 +142,8 @@ export default {
           })
       }
     },
-    getAllUrlPage() {
-      this.$axios
+    async getAllUrlPage() {
+      await this.$axios
         .get('/api/v1/url-paginate', {
           headers: {
             Authorization: 'Bearer ' + this.$cookies.get('access_token'),
@@ -155,8 +154,8 @@ export default {
           console.log(result)
         })
     },
-    getAllUrlList() {
-      this.$axios
+    async getAllUrlList() {
+      await this.$axios
         .get('/api/v1/url-list', {
           headers: {
             Authorization: 'Bearer ' + this.$cookies.get('access_token'),
@@ -178,7 +177,7 @@ export default {
     handleDelete(index, row) {
       console.log(index, row)
     },
-    saveData() {
+    async saveData() {
       const urlData = {
         shorten_id: this.url.shorten_id,
         source_url: this.url.source,
@@ -187,7 +186,7 @@ export default {
         who_click: this.url.who_click,
         expired: this.url.expired,
       }
-      this.$axios
+      await this.$axios
         .$post('/api/v1/edit-url', urlData, {
           headers: {
             Authorization: 'Bearer ' + this.$cookies.get('access_token'),

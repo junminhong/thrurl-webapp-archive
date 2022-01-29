@@ -21,7 +21,7 @@
           <el-dropdown-item @click.native="gotoUrlCenter()"
             >控制台</el-dropdown-item
           >
-          <el-dropdown-item divided>登出</el-dropdown-item>
+          <el-dropdown-item @click.native="logout()" divided>登出</el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>
     </el-col>
@@ -67,9 +67,13 @@ export default {
       this.$router.push('/login')
     },
     gotoUrlCenter() {
-      console.log('a')
       this.$router.push('/url-center')
     },
+    logout(){
+      this.$cookies.remove('access_token')
+      this.$router.push('/')
+      this.$router.go(0)
+    }
   },
 }
 </script>
